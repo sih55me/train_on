@@ -18,3 +18,4 @@ while True:
         if ev.type == pygame.KEYDOWN:
             if ev.key == pygame.K_0:
                 print("d")
+                print("aa")
