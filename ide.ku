@@ -1,0 +1,15 @@
+
+Judul Game 	 : Train On Watch
+Tipe Game : Education
+Tema Game : Kereta apa
+Deskripsi Game :
+--------------------------------------------
+Train On Watch adalah game tipe edukasi yang 
+bertujuan supaya orang tidak 
+akan menerobos rel kereta api di dunia nyata.
+---------------------------------------------
+Tujuan : Untuk mengutamakan keselamatan
+Sprite : Train, Person, Pelican Crossing
+Background : Jalanan dengan rel kereta api
+Win Condition : ketika selesai melewati pelican crossing
+Lose Condition : ketika ketabrak kereta api

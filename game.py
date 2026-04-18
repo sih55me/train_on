@@ -5,10 +5,11 @@ pygame.init()
 
 window = pygame.display.set_mode((90,100))
 pygame.display.toggle_fullscreen()
+player_standby1 = pygame.image.load("asset/player_standby1.png")
 
 while True:
-    radom = random.randint(0,225)
-    window.fill(pygame.color.Color(radom,radom,radom))
+    
+    
     pygame.display.update()
     
 
