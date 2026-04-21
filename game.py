@@ -223,7 +223,6 @@ def mainMenu():
             if ev.type == pygame.KEYDOWN:
                 if ev.key == pygame.K_SPACE:
                     gameState = 1
-                    return
                 if ev.key == pygame.K_0:
                     prefs()
                 elif ev.key == pygame.K_ESCAPE:
@@ -269,12 +268,11 @@ def winScreen():
             if ev.type == pygame.KEYDOWN:
                 if ev.key == pygame.K_SPACE:
                     gameState = 1
-                    bgmp3.stop()
-                    return
                 elif ev.key == pygame.K_ESCAPE:
                     gameState = 0
         pygame.display.update()
         clock.tick(fps)
+    bgmp3.stop()
     
 
 def lossScreen():
