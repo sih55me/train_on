@@ -18,10 +18,12 @@ clock = pygame.time.Clock()
 skor = 0
 hskor = 0
 
-bgmp3 = pygame.mixer.Sound("asset/mp3/bgsong.wav")
+step_level = 1
+
+bgmp3 = pygame.mixer.Sound("asset/mp3/Breaktime.mp3")
 bgmp3.set_volume(50)
 
-bgmp3play = pygame.mixer.Sound("asset/mp3/bgmp2.mp3")
+bgmp3play = pygame.mixer.Sound("asset/mp3/bgsong.mp3")
 bgmp3play.set_volume(30)
 
 #player
@@ -34,6 +36,8 @@ bg =  [
     pygame.transform.scale(pygame.image.load("asset/png/bgmainmenu.png").convert(), (wsiz[0], wsiz[1])),
     pygame.transform.scale(pygame.image.load("asset/png/bgplay.png").convert(), (wsiz[0], wsiz[1]))
 ]
+
+train = pygame.image.load("asset/png/train.png").convert_alpha()
 #0 = standby
 #1 = lari
 #2 = pignsan
@@ -53,7 +57,7 @@ player_cor = [
 ]
 
 
-trpoy = 150
+trpoy = 85
 train_cor = [wsiz[0]/2,trpoy]
 
 
@@ -90,9 +94,9 @@ def askQuit():
 
 
 def getDefFont(size=17):
-    return pygame.font.Font("asset/fonta/ocraextended.ttf", size)
+    return pygame.font.Font("asset/fonta/HWYGNRRW.TTF", size)
 def getzTitleFont(size=50):
-    return pygame.font.Font("asset/fonta/Cantarell-Bold.ttf", size)
+    return pygame.font.Font("asset/fonta/HWYGWDE.TTF", size)
 def getDefFontMinimal():
     return getDefFont(17)
 
@@ -105,23 +109,54 @@ def animplayer():
         player = player_standbycostume[int(player_indexcos)]
 
 def touchTrain(trre:pygame.Rect, pl:pygame.Rect):
-    global player_cor, train_cor, gameState
-    if trre.colliderect(pl):
-        bgmp3play.stop()
+    global player_cor, train_cor, gameState, skor
+    if trre.colliderect(pl) and (player_cor[1] >= 120 and player_cor[1] < 210):
+        requestStop()
         gameState = 3
-        return
 def runTrain(t,pl):
-    global train_cor
+    global train_cor, train, trpoy
     if t == True:
-        if train_cor[0] <= -100:
+        if train_cor[0] <= -450:
+            if(random.randint(0,1) == 1):
+                trpoy = 50
+                train = pygame.image.load("asset/png/trainB.png").convert_alpha()
+            else:
+                trpoy = 85
+                train = pygame.image.load("asset/png/train.png").convert_alpha()
             train_cor = [wsiz[0]+1/2,trpoy]
             t = False
-            pygame.time.set_timer(67, 3000, loops=1)
-        train_cor[0] -= 3
-        rc = pygame.draw.rect(window, pygame.Color(120,120,130), pygame.Rect(train_cor[0], train_cor[1],150, 120 ))
+            pygame.time.set_timer(67, random.randint(500, 3000), loops=1)
+            return t
+        train_cor[0] -= random.randint(10,15)
+        rc = pygame.Rect(train_cor[0], train_cor[1],150, 120)
+        window.blit(train, rc)
         touchTrain(rc, pl)
     return t
-def runGame():
+def renderskor():
+    global skor
+    et  = getDefFont(15)
+    c = pygame.Color(255,255,100)
+    titleS = et.render(f"Skor", True, c)
+    window.blit(titleS, titleS.get_rect(center=(50, 25)))
+    et  = getDefFont(30)
+    summaryS = et.render(str(skor), True, c)
+    smr = summaryS.get_rect(center=(50,50)) 
+    window.blit(summaryS, smr)
+def requestStop():
+    global bgmp3play
+    bgmp3play.stop()
+def level0():
+    global gameState
+    window.fill((0,0,0))
+    et = getzTitleFont(55)
+    t = et.render("Level not found", True, pygame.color.Color(255,0,1))
+    r = t.get_rect(center=(wsiz[0]/2, 55))
+    window.blit(t, r)
+    pygame.display.update()
+    pygame.time.delay(1500)
+def level1():
+    global  skor, hskor
+    skor = 0
     global playerMode, gameState, player_cor, train_cor
     bgmp3play.play(loops=-1)
     pygame.time.set_timer(67, 3000, loops=1)
@@ -131,11 +166,11 @@ def runGame():
     ]
     train_cor = [wsiz[0]+1/2,trpoy]
     trainTr = False
-
     while gameState == 1:
         if player_cor[1] >= 270:
-            bgmp3play.stop()
             gameState = 2
+            requestStop()
+            return
         animplayer()
         window.blit(bg[1], (0,0))
         scl = (int(plasca[int(player_indexcos)][0]*1.2),int(plasca[int(player_indexcos)][1]*1.2))
@@ -146,6 +181,7 @@ def runGame():
         trainTr = runTrain(trainTr, plr)
         if player_cor[1] >= 190:
             window.blit(ps, plr)
+        renderskor()
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
                 askQuit()
@@ -156,13 +192,31 @@ def runGame():
                 if ev.key == pygame.K_DOWN:
                     playerMode = 1
                     player_cor[1] += 10
-                    print('x = ', player_cor[1])
+                    skor += 1
+                    print('player x = ', player_cor[1])
                 elif ev.key == pygame.K_ESCAPE:
                     askQuit()
         playerMode = 0
+        
         pygame.display.update()
         clock.tick(fps)
     pygame.time.set_timer(67, 0)
+    bgmp3play.stop()
+    gameState = 0
+def level2():
+    global gameState
+    window.fill((0,0,0))
+    et = getzTitleFont(55)
+    t = et.render("On progress", True, pygame.color.Color(255,0,1))
+    r = t.get_rect(center=(wsiz[0]/2, 55))
+    window.blit(t, r)
+    pygame.display.update()
+    pygame.time.delay(1500)
+def runGame():
+    if step_level == 1:level1()
+    elif step_level == 2:level2()
+    else:level0()
+
 def prefs():
     windowPref = tkinter.Tk()
     box = tkinter.Frame(windowPref)
@@ -201,18 +255,18 @@ def mainMenu():
     while gameState == 0:
         window.blit(bg[0], (0,0))
         et = getzTitleFont(55)
-        et.set_bold(True)
         t = et.render("Train On Watch", True, pygame.color.Color(75,75,75))
         r = t.get_rect(center=(wsiz[0]/2, 55))
         window.blit(t, r)
         t = getDefFont(18).render("Press SPACE to start", True, pygame.color.Color(25,25,55))
         r = t.get_rect(center=(wsiz[0]/2, (wsiz[1]/2)-40))
         window.blit(t, r)
-        t = getzTitleFont(14).render("Jangan ditiru di dunia nyata!", True, pygame.color.Color(225,0,0))
+        et = getDefFont(16)
+        et.set_bold(True)
+        t = et.render(f"Last highscore: {int(hskor)}", True, pygame.color.Color(225,255,255))
         r = t.get_rect(center=(120, int(wsiz[1]/1.1)))
         window.blit(t, r)
-        et = getzTitleFont(14)
-        et.set_bold(True)
+    
         t = et.render("(c) 4a56b", True, pygame.color.Color(225,0,0))
         
         r = t.get_rect(center=(wsiz[0]-120, int(wsiz[1]/1.1)))
@@ -233,6 +287,7 @@ def mainMenu():
 
 
 def winScreen():
+    global step_level
     for i in range(200):
         drect = (0,0,wsiz[0], wsiz[1])
         dim = pygame.Surface(pygame.Rect(drect).size, pygame.SRCALPHA)
@@ -240,33 +295,40 @@ def winScreen():
         dim.fill((205,205,205))
         window.blit(dim, drect)
         pygame.display.update()
-    global gameState
-    pygame.display.set_caption("Train On Watch - YES!!")
+    global gameState, skor, hskor
+    pygame.display.set_caption("Train On Watch - You win!!")
     pygame.mixer.Sound("asset/mp3/win.mp3").play()
     window.set_alpha(100)
+    #layout
+    et = getzTitleFont(55)
+    if skor >= hskor:
+        hskor = skor
+    t = et.render("You Win!", True, pygame.color.Color(0,55,0,1))
+    r = t.get_rect(center=(wsiz[0]/2, 55))
+    window.blit(t, r)
+    et  = getzTitleFont(19)
+    et.set_bold(False)
+    t = et.render(f"Score : {int(skor)}", True, pygame.color.Color(25,25,25,1))
+    r = t.get_rect(center=(wsiz[0]/2, 125))
+    window.blit(t, r)
+    t = et.render(f"HighScore : {int(hskor)}", True, pygame.color.Color(25,25,25,1))
+    r = t.get_rect(center=(wsiz[0]/2, 130+t.get_height()))
+    window.blit(t, r)
+    ew = pygame.font.Font("asset/fonta/ocraextended.ttf", 17)
+    ew.set_bold(True)
+    t = ew.render("[SPACE] | Try again  [ENTER] | Next level   [ESC] | Back", True, pygame.color.Color(25,25,55,1))
+    r = t.get_rect(center=(wsiz[0]/2, (wsiz[1])-t.get_height()-10))
+    window.blit(t, r)
+    window.blit(t, r)
     while gameState == 2:
-        et = getzTitleFont(55)
-        et.set_bold(True)
-        t = et.render("You Win!", True, pygame.color.Color(0,55,0,1))
-        r = t.get_rect(center=(wsiz[0]/2, 55))
-        window.blit(t, r)
-        et  = getzTitleFont(19)
-        et.set_bold(False)
-        t = et.render(f"Score : {skor}", True, pygame.color.Color(25,25,25,1))
-        r = t.get_rect(center=(wsiz[0]/2, 125))
-        window.blit(t, r)
-        t = et.render(f"HighScore : {hskor}", True, pygame.color.Color(25,25,25,1))
-        r = t.get_rect(center=(wsiz[0]/2, 130+t.get_height()))
-        window.blit(t, r)
-        t = getDefFont(18).render("[SPACE] | Continue     [ESC] | Back", True, pygame.color.Color(25,25,55,1))
-        r = t.get_rect(center=(wsiz[0]/2, (wsiz[1])-t.get_height()-10))
-        window.blit(t, r)
-        window.blit(t, r)
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
                 gameState = 0
             if ev.type == pygame.KEYDOWN:
                 if ev.key == pygame.K_SPACE:
+                    gameState = 1
+                if ev.key == pygame.K_RETURN:
+                    step_level +=1
                     gameState = 1
                 elif ev.key == pygame.K_ESCAPE:
                     gameState = 0
@@ -278,37 +340,37 @@ def winScreen():
 def lossScreen():
     bdsfx = pygame.mixer.Sound("asset/mp3/badending.wav")
     bdsfx.play(loops=-1)
-    for i in range(280):
+    for i in range(170):
         drect = (0,0,wsiz[0], wsiz[1])
         dim = pygame.Surface(pygame.Rect(drect).size, pygame.SRCALPHA)
-        dim.set_alpha(random.randint(1,2))
+        dim.set_alpha(1)
         dim.fill((0,0,0))
         window.blit(dim, drect)
         pygame.display.update()
-        clock.tick(40)
+    pygame.time.set_timer(67, 0)
     global gameState
-    pygame.display.set_caption("Train On Watch - --")
-    window.set_alpha(100)
+    et = getzTitleFont(55)
+    et
+    t = et.render("You LOSE!", True, pygame.color.Color(255,0,1))
+    r = t.get_rect(center=(wsiz[0]/2, 55))
+    window.blit(t, r)
+    et  = getDefFont(19)
+    et.set_bold(False)
+    t = et.render(f"Score : {int(skor)}", True, pygame.color.Color(225,225,225,1),)
+    r = t.get_rect(center=(wsiz[0]/2, 125))
+    window.blit(t, r)
+    t = et.render(f"HighScore : {int(hskor)}", True, pygame.color.Color(225,225,225,1))
+    r = t.get_rect(center=(wsiz[0]/2, 130+t.get_height()))
+    window.blit(t, r)
+    ew = pygame.font.Font("asset/fonta/ocraextended.ttf", 17)
+    ew.set_bold(True)
+    t = ew.render("[SPACE] | Try again     [ESC] | Back", True, pygame.color.Color(110,110,255,1))
+    r = t.get_rect(center=(wsiz[0]/2, (wsiz[1])-t.get_height()-10))
+    window.blit(t, r)
     while gameState == 3:
-        et = getzTitleFont(55)
-        et.set_bold(True)
-        t = et.render("You LOSE!", True, pygame.color.Color(255,0,1))
-        r = t.get_rect(center=(wsiz[0]/2, 55))
-        window.blit(t, r)
-        et  = getzTitleFont(19)
-        et.set_bold(False)
-        t = et.render(f"Score : {skor}", False, pygame.color.Color(225,225,225,1))
-        r = t.get_rect(center=(wsiz[0]/2, 125))
-        window.blit(t, r)
-        t = et.render(f"HighScore : {hskor}", False, pygame.color.Color(225,225,225,1))
-        r = t.get_rect(center=(wsiz[0]/2, 130+t.get_height()))
-        window.blit(t, r)
-        t = getDefFont(18).render("[SPACE] | Continue     [ESC] | Back", True, pygame.color.Color(25,25,55,1))
-        r = t.get_rect(center=(wsiz[0]/2, (wsiz[1])-t.get_height()-10))
-        window.blit(t, r)
-        window.blit(t, r)
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
+                bdsfx.stop()
                 gameState = 0
             if ev.type == pygame.KEYDOWN:
                 if ev.key == pygame.K_SPACE:
