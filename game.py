@@ -202,7 +202,6 @@ def level1():
         clock.tick(fps)
     pygame.time.set_timer(67, 0)
     bgmp3play.stop()
-    gameState = 0
 def level2():
     global gameState
     window.fill((0,0,0))
