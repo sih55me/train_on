@@ -1,5 +1,9 @@
 import pygame, random,tkinter
+from tkinter import messagebox
 
+
+root = tkinter.Tk()
+root.withdraw()
 
 pygame.init()
 #state:
@@ -15,17 +19,22 @@ pygame.display.set_caption("Train On Watch")
 fps = 50
 clock = pygame.time.Clock()
 
+spwasdc =  pygame.USEREVENT + 1
+
 skor = 0
 hskor = 0
 
 step_level = 1
 
-bgmp3 = pygame.mixer.Sound("asset/mp3/Breaktime.mp3")
+bgmp3 = pygame.mixer.Sound("asset/mp3/Breaktime.wav")
 bgmp3.set_volume(50)
 
-bgmp3play = pygame.mixer.Sound("asset/mp3/bgsong.mp3")
+bgmp3play = pygame.mixer.Sound("asset/mp3/bgsong.ogg")
 bgmp3play.set_volume(30)
 
+clicksfx = pygame.mixer.Sound("asset/mp3/click.wav")
+
+clicksfx.set_volume(5)
 #player
 player_standbycostume = [
     pygame.image.load("asset/png/player_standby1.png").convert_alpha(),
@@ -63,34 +72,32 @@ train_cor = [wsiz[0]/2,trpoy]
 
 def askQuit():
     isDialogQuit = True
-    drect = (0,0,wsiz[0], wsiz[1])
-    dim = pygame.Surface(pygame.Rect(drect).size, pygame.SRCALPHA)
-    dim.set_alpha(138)
-    dim.fill((0,0,0))
-    window.blit(dim, drect)
-    t = getzTitleFont(25).render("Quit the game?", True, pygame.color.Color(225,225,255))
-    r = t.get_rect(center=(wsiz[0]/2, (wsiz[1]/2)-30))
-    window.blit(t, r)
 
-    t = getDefFont(19).render("[ENTER]| Yes", True, pygame.color.Color(225,0,0),pygame.Color(55,0,0))
-    r = t.get_rect(center=(wsiz[0]/2- 100, (wsiz[1]/2)+10))
-    window.blit(t, r)
 
-    t = getDefFont(19).render("[ESC]| No", True, pygame.color.Color(225,225,255))
-    r = t.get_rect(center=(wsiz[0]/2+ 120, (wsiz[1]/2)+10))
-    window.blit(t, r)
-    pygame.display.update()
+
+
     while isDialogQuit:
+        window.fill((0,0,0))
+        drect = (0,0,wsiz[0], wsiz[1])
+        t = getzTitleFont(55).render("Quit the game?", True, pygame.color.Color(225,225,255))
+        r = t.get_rect(center=(wsiz[0]/2, (wsiz[1]/4)-30))
+        window.blit(t, r)
+        t = getDefFont(20).render("Enter number 1 to quit. Other key to cancel", True, pygame.color.Color(225,0,0))
+        r = t.get_rect(center=(wsiz[0]/2, (wsiz[1]/4)+20))
+        window.blit(t, r)
+
+
+        window.blit(t, r)
+        pygame.display.update()
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
-                isDialogQuit = False
+                exit()
             if ev.type == pygame.KEYDOWN:
-                if ev.key == pygame.K_RETURN:
-                    isDialogQuit = False
-                    pygame.quit()
-                    exit()
-                elif ev.key == pygame.K_ESCAPE:
-                    isDialogQuit = False
+                isDialogQuit = False
+                if ev.key == pygame.K_1:
+                        pygame.quit()
+                        exit()
+
 
 
 def getDefFont(size=17):
@@ -125,7 +132,7 @@ def runTrain(t,pl):
                 train = pygame.image.load("asset/png/train.png").convert_alpha()
             train_cor = [wsiz[0]+1/2,trpoy]
             t = False
-            pygame.time.set_timer(67, random.randint(500, 3000), loops=1)
+            pygame.time.set_timer(spwasdc, random.randint(500, 3000),)
             return t
         train_cor[0] -= random.randint(10,15)
         rc = pygame.Rect(train_cor[0], train_cor[1],150, 120)
@@ -159,7 +166,7 @@ def level1():
     skor = 0
     global playerMode, gameState, player_cor, train_cor
     bgmp3play.play(loops=-1)
-    pygame.time.set_timer(67, 3000, loops=1)
+    pygame.time.set_timer(spwasdc, 3000,)
     player_cor = [
         int(wsiz[0]/2),
         int(60)
@@ -185,8 +192,8 @@ def level1():
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
                 askQuit()
-            if ev.type == 67:
-                pygame.time.set_timer(67, 0)
+            if ev.type == spwasdc:
+                pygame.time.set_timer(spwasdc, 0)
                 trainTr = True
             if ev.type == pygame.KEYDOWN:
                 if ev.key == pygame.K_DOWN:
@@ -200,7 +207,7 @@ def level1():
         
         pygame.display.update()
         clock.tick(fps)
-    pygame.time.set_timer(67, 0)
+    pygame.time.set_timer(spwasdc, 0)
     bgmp3play.stop()
 def level2():
     global gameState
@@ -213,41 +220,98 @@ def level2():
     pygame.time.delay(1500)
 def runGame():
     if step_level == 1:level1()
-    elif step_level == 2:level2()
     else:level0()
 
 def prefs():
-    windowPref = tkinter.Tk()
-    box = tkinter.Frame(windowPref)
-    box.pack()
-    def l():
-        gsgtest(windowPref)
-    gsgbtn = tkinter.Button(box, text="Gamestate test", command=l)
-    gsgbtn.pack()
-    sclbtn = tkinter.Button(box, text="Scale")
-    sclbtn.pack()
-    windowPref.mainloop()
-def gsgtest(d):
-    global gameState
-    windowPref1 = tkinter.Toplevel(d)
-    box = tkinter.Frame(windowPref1)
-    windowPref1.grab_set()
-    windowPref1.transient(d)
-    box.pack()
-    testCategory = tkinter.Label(box, text="Testing")
-    testCategory.pack()
-    gameStateGo = tkinter.Entry(box)
-    gameStateGo.pack()
-    def testGsg(o):
+    def bg_sc(r):
+        if r == True:
+            return (255,100,1)
+        else:return None
+    slc = 0
+    while True:
         global gameState
-        try:
-            gameState = int(o)
-            d.destroy()
-        except:
-            print("Invalid gs")
-    gsgbtn = tkinter.Button(box, text="Send to gamestate", command=lambda:testGsg(gameStateGo.get()))
-    gsgbtn.pack()
-    windowPref1.mainloop()
+        window.fill((0,0,0))
+        et = getzTitleFont(55)
+        t = et.render("Settings", True, pygame.color.Color(255,255,255))
+        r = t.get_rect(center=(wsiz[0]/2, 55))
+        window.blit(t, r)
+        iet = getDefFont(25)
+        p = iet.render("[1] gameState test", True, pygame.color.Color(255,225,1), bg_sc(slc == 0))
+        r = p.get_rect(center=(wsiz[0]/2, 120))
+        window.blit(p, r)
+        p = iet.render("[2] About", True, pygame.color.Color(255,225,225), bg_sc(slc == 1))
+        r = p.get_rect(center=(wsiz[0]/2, 150))
+        window.blit(p, r)
+        p = iet.render("[ESC] Exit", True, pygame.color.Color(255,225,225), bg_sc(slc == 2))
+        r = p.get_rect(center=(wsiz[0]/2, 185))
+        window.blit(p, r)
+        pygame.display.update()
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                askQuit()
+            if ev.type == pygame.KEYDOWN:
+                print(slc)
+                if ev.key == pygame.K_1:
+                    if(gsgtest() == 1):
+                        return
+                if ev.key == pygame.K_UP:
+                    slc -=1
+                    if slc < 0:
+                        slc = 2
+                if ev.key == pygame.K_DOWN:
+                    slc +=1
+                    if slc > 2:
+                        slc = 0
+
+                if ev.key == pygame.K_2:
+                    root.update()
+                    root.attributes("-topmost", True) 
+                    messagebox.showinfo("About","""
+This game is powered by python, tk(ui), and pygame.
+                                        
+(C) 4b56a 2026
+                                        
+music:
+once upon a time toby fox - game over
+???
+                                        """)
+                    root.update()
+                elif ev.key == pygame.K_ESCAPE:
+                    return
+def gsgtest():
+    global gameState
+
+    while True:
+        global gameState
+        window.fill((0,0,0))
+        et = getzTitleFont(55)
+        t = et.render("gameState test", True, pygame.color.Color(255,0,1))
+        r = t.get_rect(center=(wsiz[0]/2, 55))
+        window.blit(t, r)
+        iet = getDefFont(18)
+        p = iet.render("Enter some number, ESC to back.", True, pygame.color.Color(255,220,220))
+        r = p.get_rect(center=(wsiz[0]/2, 120))
+        window.blit(p, r)
+        pygame.display.update()
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                askQuit()
+            if ev.type == pygame.KEYDOWN:
+                if ev.key == pygame.K_ESCAPE:
+                    return -1
+                if ev.key == pygame.K_0:
+                    gameState = int(0)
+                    return 1
+                if ev.key == pygame.K_1:
+                    gameState = int(1)
+                    return 1
+                if ev.key == pygame.K_2:
+                    gameState = int(2)
+                    return 1
+                if ev.key == pygame.K_3:
+                    gameState = int(3)
+                    return 1
+                
 def mainMenu():
     global gameState
     bgmp3.play(loops=-1)
@@ -267,7 +331,6 @@ def mainMenu():
         window.blit(t, r)
     
         t = et.render("(c) 4a56b", True, pygame.color.Color(225,0,0))
-        
         r = t.get_rect(center=(wsiz[0]-120, int(wsiz[1]/1.1)))
         window.blit(t, r)
         for ev in pygame.event.get():
@@ -276,7 +339,9 @@ def mainMenu():
             if ev.type == pygame.KEYDOWN:
                 if ev.key == pygame.K_SPACE:
                     gameState = 1
+                    clicksfx.play()
                 if ev.key == pygame.K_0:
+                    clicksfx.play()
                     prefs()
                 elif ev.key == pygame.K_ESCAPE:
                     askQuit()
@@ -296,7 +361,7 @@ def winScreen():
         pygame.display.update()
     global gameState, skor, hskor
     pygame.display.set_caption("Train On Watch - You win!!")
-    pygame.mixer.Sound("asset/mp3/win.mp3").play()
+    pygame.mixer.Sound("asset/mp3/Bood.wav").play()
     window.set_alpha(100)
     #layout
     et = getzTitleFont(55)
@@ -315,7 +380,7 @@ def winScreen():
     window.blit(t, r)
     ew = pygame.font.Font("asset/fonta/ocraextended.ttf", 17)
     ew.set_bold(True)
-    t = ew.render("[SPACE] | Try again  [ENTER] | Next level   [ESC] | Back", True, pygame.color.Color(25,25,55,1))
+    t = ew.render("[SPACE] | Try again   [ESC] | Back", True, pygame.color.Color(25,25,55,1))
     r = t.get_rect(center=(wsiz[0]/2, (wsiz[1])-t.get_height()-10))
     window.blit(t, r)
     window.blit(t, r)
@@ -325,11 +390,10 @@ def winScreen():
                 gameState = 0
             if ev.type == pygame.KEYDOWN:
                 if ev.key == pygame.K_SPACE:
-                    gameState = 1
-                if ev.key == pygame.K_RETURN:
-                    step_level +=1
+                    clicksfx.play()
                     gameState = 1
                 elif ev.key == pygame.K_ESCAPE:
+                    clicksfx.play()
                     gameState = 0
         pygame.display.update()
         clock.tick(fps)
@@ -346,7 +410,7 @@ def lossScreen():
         dim.fill((0,0,0))
         window.blit(dim, drect)
         pygame.display.update()
-    pygame.time.set_timer(67, 0)
+    pygame.time.set_timer(spwasdc, 0)
     global gameState
     et = getzTitleFont(55)
     et
@@ -373,10 +437,12 @@ def lossScreen():
                 gameState = 0
             if ev.type == pygame.KEYDOWN:
                 if ev.key == pygame.K_SPACE:
+                    clicksfx.play()
                     gameState = 1
                     bdsfx.stop()
                     return
                 elif ev.key == pygame.K_ESCAPE:
+                    clicksfx.play()
                     gameState = 0
                     bdsfx.stop()
                     return
